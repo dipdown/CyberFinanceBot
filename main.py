@@ -1,21 +1,17 @@
 import asyncio
-from os import listdir
-from os import mkdir
-from os.path import exists
-from os.path import isdir
+from os import listdir, mkdir
+from os.path import exists, isdir
 
 from utils.CyberFinance import start_farming
-from utils.core import logger
-from utils.core import create_sessions
+from utils.core import logger, create_sessions
 
 from database import on_startup_database
 from database import actions as db_actions
 
 from utils.telegram import Accounts
 
-
 start_text = """
-Cyber Finance Bot 
+Cyber Finance Bot
 
 Select an action:
 
@@ -44,7 +40,6 @@ async def main() -> None:
         case _:
             print('Choose the correct number')
 
-
 if __name__ == "__main__":
     if not exists(path='sessions'):
         mkdir(path='sessions')
@@ -53,5 +48,5 @@ if __name__ == "__main__":
                                 else current_file for current_file in listdir(path='sessions')
                                 if current_file.endswith('.session') or isdir(s=f'sessions/{current_file}')]
 
-    logger.info(f'Обнаружено {len(session_files)} сессий')
+    logger.info(f'Found {len(session_files)} sessions')
     asyncio.get_event_loop().run_until_complete(main())
