@@ -15,8 +15,7 @@ from utils.telegram import Accounts
 
 
 start_text = """
-CyberFinance claimer
-by AnusSoft: https://t.me/cryptolamik
+Cyber Finance Bot 
 
 Select an action:
 
@@ -43,7 +42,7 @@ async def main() -> None:
             await asyncio.gather(*tasks)
 
         case _:
-            print('Действие выбрано некорректно')
+            print('Choose the correct number')
 
 
 if __name__ == "__main__":
