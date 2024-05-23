@@ -14,7 +14,6 @@ from urllib.parse import unquote, quote
 from data import config
 from utils.core import logger
 
-
 headers = {
     'Accept': 'application/json',
     'Accept-Language': 'ru,en;q=0.9,en-GB;q=0.8,en-US;q=0.7',
@@ -30,7 +29,6 @@ headers = {
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
 }
-
 
 class Cyber:
     def __init__(self, session_name: str, session_proxy: str | None = None):
@@ -54,15 +52,13 @@ class Cyber:
                                 )
         self.session = aiohttp.ClientSession(headers=headers, trust_env=True)
     
-    
     async def check_proxy(self, http_client: aiohttp.ClientSession) -> None:
         try:
             response = await http_client.get(url='https://httpbin.org/ip', timeout=aiohttp.ClientTimeout(5))
             ip = (await response.json()).get('origin')
             logger.info(f"{self.session_name} | Proxy IP: {ip}")
         except Exception as e:
-            logger.error(f"Ошибка при проверке прокси акк {self.session_name}: {e}")
-            
+            logger.error(f"Error checking proxy account {self.session_name}: {e}")
     
     async def start_farming(self):
         await self.tg_client.start()
@@ -89,28 +85,26 @@ class Cyber:
                             await self.check_boosts_and_upgrade(http_client=http_client, user_balance=balance)
                             
                             if crack_time is not None and crack_time > current_time:
-                                logger.info(f"{self.session_name} | Спим. Следующий клейм через: {(crack_time - current_time) / 60} мин.")
+                                logger.info(f"{self.session_name} | Sleeping. Next claim in: {(crack_time - current_time) / 60} mins.")
                                 await asyncio.sleep(crack_time - current_time + 60)
                                 await self.claim(http_client=http_client)
                             else:
-                                logger.info(f"{self.session_name} | Время клеймить.")
+                                logger.info(f"{self.session_name} | Time to claim.")
                                 await asyncio.sleep(random.uniform(config.TASK_DELAY[0], config.TASK_DELAY[1]))
                                 await self.claim(http_client=http_client)
 
                         except Exception as e:
-                            logger.error(f"{self.session_name} | Ошибка: {e}")
+                            logger.error(f"{self.session_name} | Error: {e}")
                             traceback.print_exc()
                 except Exception as e:
-                    logger.error(f"{self.session_name} | Ошибка: {e}")
+                    logger.error(f"{self.session_name} | Error: {e}")
                     traceback.print_exc()
 
-    
     async def login(self, http_client: aiohttp.ClientSession, proxy: str | None):
         tg_web_data: str = await self.get_tg_web_data(proxy)
         resp = await http_client.post("https://api.cyberfinance.xyz/api/v1/game/initdata/", json={'initData': tg_web_data})
         http_client.headers['Authorization'] = "Bearer " + (await resp.json(content_type=None))['message']['accessToken']
-    
-    
+
     async def get_tg_web_data(self, proxy: str | None) -> str:
         if proxy:
             proxy = Proxy.from_str(proxy)
@@ -148,8 +142,7 @@ class Cyber:
         tg_web_data = decoded_data.replace(json_data_str, encoded_json_str)
 
         return tg_web_data
-    
-    
+
     async def check_claim(self, http_client: aiohttp.ClientSession):
         resp = await http_client.get("https://api.cyberfinance.xyz/api/v1/game/mining/gamedata")
         resp_json = await resp.json(content_type=None)
@@ -159,7 +152,6 @@ class Cyber:
 
         return int(crack_time), int(balance)
 
-
     async def claim(self, http_client: aiohttp.ClientSession):
         resp = await http_client.get("https://api.cyberfinance.xyz/api/v1/mining/claim")
             
@@ -167,29 +159,25 @@ class Cyber:
             resp_json = await resp.json(content_type=None)
             balance = resp_json.get("message", {}).get("userData", {}).get("balance")
                 
-            logger.success(f"Поток {self.session_name} | Получена награда! Баланс: {balance}")
+            logger.success(f"Thread {self.session_name} | Reward received! Balance: {balance}")
         else:
-            logger.error(f'{self.session_name} | Ошибка: {resp.status}')
-    
-    
+            logger.error(f'{self.session_name} | Error: {resp.status}')
+
     async def check_missions_and_complete(self, http_client: aiohttp.ClientSession):
         try:
-            logger.info(f'{self.session_name} | Проверяю задания')
+            logger.info(f'{self.session_name} | Checking missions')
             resp = await http_client.get('https://api.cyberfinance.xyz/api/v1/gametask/all')
             
             if resp.status == 200 or resp.status == 201:
-                logger.info(f'{self.session_name} | Здания получены')
+                logger.info(f'{self.session_name} | Missions retrieved')
                 data = await resp.json(content_type=None)
                 for item in data['message']:
                     if not item['isCompleted'] and item['isActive']:
                         await self.complete_mission(http_client, item['uuid'])
-
             else:
-                logger.error(f'{self.session_name} | Ошибка в получении заданий: {resp.status}')
-
+                logger.error(f'{self.session_name} | Error retrieving missions: {resp.status}')
         except Exception as e:
-                    logger.error(f"{self.session_name} | Ошибка: {e}")
-
+            logger.error(f"{self.session_name} | Error: {e}")
 
     async def complete_mission(self, http_client: aiohttp.ClientSession, mission_uuid: str) -> dict:
         try:
@@ -197,35 +185,33 @@ class Cyber:
             resp = await http_client.patch(f'https://api.cyberfinance.xyz/api/v1/gametask/complete/{mission_uuid}')
 
             if resp.status == 200 or resp.status == 201:
-                logger.info(f'{self.session_name} | Миссия - {mission_uuid} выполнена')
+                logger.info(f'{self.session_name} | Mission - {mission_uuid} completed')
                 return await resp.json(content_type=None)
-
         except Exception as error:
-            logger.error(f'{self.session_name} | Ошибка в выполнении задания: {error}')
-            
-            
+            logger.error(f'{self.session_name} | Error completing mission: {error}')
+    
     async def check_boosts_and_upgrade(self, http_client: aiohttp.ClientSession, user_balance: int):
         while True:
             try:
-                logger.info(f'{self.session_name} | Проверяю бусты')
+                logger.info(f'{self.session_name} | Checking boosts')
                 resp = await http_client.get('https://api.cyberfinance.xyz/api/v1/mining/boost/info')
 
                 if resp.status != 200 and resp.status != 201:
-                    logger.error(f'{self.session_name} | Ошибка при получении информации о бустах: {resp.status}')
+                    logger.error(f'{self.session_name} | Error getting boost info: {resp.status}')
                     break
 
                 resp_json = await resp.json(content_type=None)
                 hammer_price = resp_json.get("message", {}).get("hammerPrice")
 
                 if int(user_balance) < int(hammer_price):
-                    logger.info(f'{self.session_name} | Баланса недостаточно для покупки хаммера')
+                    logger.info(f'{self.session_name} | Insufficient balance to buy hammer')
                     break
 
                 await self.upgrade_hammer(http_client)
                 user_balance -= int(hammer_price)
 
             except Exception as error:
-                logger.error(f'{self.session_name} | Ошибка при получении бустов: {error}')
+                logger.error(f'{self.session_name} | Error getting boosts: {error}')
                 break
 
     async def upgrade_hammer(self, http_client: aiohttp.ClientSession):
@@ -235,13 +221,12 @@ class Cyber:
             resp = await http_client.post(url='https://api.cyberfinance.xyz/api/v1/mining/boost/apply', json=data)
 
             if resp.status != 200 and resp.status != 201:
-                logger.error(f'{self.session_name} | Ошибка при покупке хаммера: {resp.status}')
+                logger.error(f'{self.session_name} | Error buying hammer: {resp.status}')
 
-            logger.info(f'{self.session_name} | Хаммер куплен')
+            logger.info(f'{self.session_name} | Hammer bought')
 
         except Exception as error:
-            logger.error(f'{self.session_name} | Ошибка в покупке хаммера: {error}')
-
+            logger.error(f'{self.session_name} | Error buying hammer: {error}')
 
 async def start_farming(session_name: str, session_proxy: str | None = None) -> None:
     try:
