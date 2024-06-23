@@ -7,6 +7,9 @@
    ```sh
    git clone https://github.com/dipdown/CyberFinanceBot/
    ```
+   ```sh
+   cd CyberFinanceBot
+   ```
 3. Creating and Activating a Virtual Environment in Python
    ```sh
    python3 -m venv venv
