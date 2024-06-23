@@ -1,4 +1,4 @@
-# Installation Linux
+# Installation Linux VPS
 1. Create Screen
    ```sh
    screen -Rd cfi
