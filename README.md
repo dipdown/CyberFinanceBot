@@ -1,4 +1,4 @@
-# Installation for Linux (VPS/TERMUX)
+# Installation for Linux 
 1. Create Screen (Only VPS)
    ```sh
    screen -Rd cfi
